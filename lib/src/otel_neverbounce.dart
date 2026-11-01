@@ -1,15 +1,16 @@
-// Licensed under the Dartastic Pro Software License Agreement.
+// Licensed under the Apache License, Version 2.0
 // Copyright 2025-2026 Mindful Software LLC d/b/a Dartastic.io, All rights reserved.
 
-import 'package:dartastic_opentelemetry/dartastic_opentelemetry.dart';
+import 'package:dartastic_opentelemetry_api/dartastic_opentelemetry_api.dart';
 
 import 'otel_neverbounce_suppression.dart';
 
 const _tracerName = 'dartastic_otel_libs_neverbounce';
 
-Tracer _tracer() => OTel.tracerProvider().getTracer(_tracerName);
+APITracer _tracer() => OTelAPI.tracerProvider().getTracer(_tracerName);
 
 class NeverbounceResult {
+  /// Creates a result.
   const NeverbounceResult({
     this.email,
     this.result,
@@ -69,8 +70,13 @@ class NeverbounceResult {
   final int? statusCode;
 }
 
+/// What a traced call returned: the value for the caller plus fields
+/// recorded on the span.
 class NeverbounceCallResult<T> {
+  /// Creates a call result.
   const NeverbounceCallResult({required this.value, this.result});
+
+  /// The value returned to the caller.
   final T value;
   final NeverbounceResult? result;
 }
@@ -97,20 +103,20 @@ Future<T> tracedNeverbounce<T>({
   final span = _tracer().startSpan(
     'neverbounce $operation',
     kind: SpanKind.client,
-    attributes: OTel.attributesFromMap(m),
+    attributes: OTelAPI.attributesFromMap(m),
   );
   try {
     final r = await invoke();
     if (r.result != null) {
       final extras = <Attribute<Object>>[];
       if (r.result!.email != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'neverbounce.email',
           r.result!.email!,
         ));
       }
       if (r.result!.result != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'neverbounce.result',
           r.result!.result!,
         ));
@@ -122,31 +128,31 @@ Future<T> tracedNeverbounce<T>({
         }
       }
       if (r.result!.flagsCsv != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'neverbounce.flags',
           r.result!.flagsCsv!,
         ));
       }
       if (r.result!.suggestedCorrection != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'neverbounce.suggested_correction',
           r.result!.suggestedCorrection!,
         ));
       }
       if (r.result!.executionTimeMs != null) {
-        extras.add(OTel.attributeInt(
+        extras.add(OTelAPI.attributeInt(
           'neverbounce.execution_ms',
           r.result!.executionTimeMs!,
         ));
       }
       if (r.result!.jobId != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'neverbounce.job.id',
           r.result!.jobId!,
         ));
       }
       if (r.result!.jobStatus != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'neverbounce.job.status',
           r.result!.jobStatus!,
         ));
@@ -158,55 +164,55 @@ Future<T> tracedNeverbounce<T>({
         }
       }
       if (r.result!.jobInputCount != null) {
-        extras.add(OTel.attributeInt(
+        extras.add(OTelAPI.attributeInt(
           'neverbounce.job.input_count',
           r.result!.jobInputCount!,
         ));
       }
       if (r.result!.jobValid != null) {
-        extras.add(OTel.attributeInt(
+        extras.add(OTelAPI.attributeInt(
           'neverbounce.job.valid',
           r.result!.jobValid!,
         ));
       }
       if (r.result!.jobInvalid != null) {
-        extras.add(OTel.attributeInt(
+        extras.add(OTelAPI.attributeInt(
           'neverbounce.job.invalid',
           r.result!.jobInvalid!,
         ));
       }
       if (r.result!.jobCatchall != null) {
-        extras.add(OTel.attributeInt(
+        extras.add(OTelAPI.attributeInt(
           'neverbounce.job.catchall',
           r.result!.jobCatchall!,
         ));
       }
       if (r.result!.jobDisposable != null) {
-        extras.add(OTel.attributeInt(
+        extras.add(OTelAPI.attributeInt(
           'neverbounce.job.disposable',
           r.result!.jobDisposable!,
         ));
       }
       if (r.result!.jobUnknown != null) {
-        extras.add(OTel.attributeInt(
+        extras.add(OTelAPI.attributeInt(
           'neverbounce.job.unknown',
           r.result!.jobUnknown!,
         ));
       }
       if (r.result!.creditsUsed != null) {
-        extras.add(OTel.attributeInt(
+        extras.add(OTelAPI.attributeInt(
           'neverbounce.credits.used',
           r.result!.creditsUsed!,
         ));
       }
       if (r.result!.creditsRemaining != null) {
-        extras.add(OTel.attributeInt(
+        extras.add(OTelAPI.attributeInt(
           'neverbounce.credits.remaining',
           r.result!.creditsRemaining!,
         ));
       }
       if (r.result!.statusCode != null) {
-        extras.add(OTel.attributeInt(
+        extras.add(OTelAPI.attributeInt(
           'http.response.status_code',
           r.result!.statusCode!,
         ));
@@ -217,13 +223,13 @@ Future<T> tracedNeverbounce<T>({
           );
         }
       }
-      if (extras.isNotEmpty) span.addAttributes(OTel.attributes(extras));
+      if (extras.isNotEmpty) span.addAttributes(OTelAPI.attributes(extras));
     }
     return r.value;
   } catch (e, st) {
-    span.addAttributes(OTel.attributes([
-      OTel.attributeString(
-        ErrorResource.errorType.key,
+    span.addAttributes(OTelAPI.attributes([
+      OTelAPI.attributeString(
+        ErrorAttributes.errorType.key,
         e.runtimeType.toString(),
       ),
     ]));
